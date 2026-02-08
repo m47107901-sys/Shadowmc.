@@ -1057,7 +1057,7 @@ async def list_all_vps(ctx):
         vps_text = "\n".join(vps_info)
         chunks = [vps_text[i:i+1024] for i in range(0, len(vps_text), 1024)]
         for idx, chunk in enumerate(chunks, 1):
-            embed = create_embed(f"UnixNodes VPS Details (Part {idx})", "List of all UnixNodes VPS deployments", 0x1a1a1a)
+            embed = create_embed(f"UnixNodes VPS Details (Part {idx})", "List of all ShadowNodes VPS deployments", 0x1a1a1a)
             add_field(embed, "VPS List", chunk, False)
             await ctx.send(embed=embed)
 
@@ -1123,7 +1123,7 @@ async def revoke_share(ctx, shared_user: discord.Member, vps_number: int):
 async def delete_vps(ctx, user: discord.Member, vps_number: int, *, reason: str = "No reason"):
     user_id = str(user.id)
     if user_id not in vps_data or vps_number < 1 or vps_number > len(vps_data[user_id]):
-        await ctx.send(embed=create_error_embed("Invalid VPS", "Invalid VPS number or user doesn't have a UnixNodes VPS."))
+        await ctx.send(embed=create_error_embed("Invalid VPS", "Invalid VPS number or user doesn't have a ShadowNodes VPS."))
         return
     vps = vps_data[user_id][vps_number - 1]
     container_name = vps["container_name"]
@@ -1137,11 +1137,11 @@ async def delete_vps(ctx, user: discord.Member, vps_number: int, *, reason: str 
                 vps_role = await get_or_create_vps_role(ctx.guild)
                 if vps_role and vps_role in user.roles:
                     try:
-                        await user.remove_roles(vps_role, reason="No UnixNodes VPS ownership")
+                        await user.remove_roles(vps_role, reason="No ShadowNodes VPS ownership")
                     except discord.Forbidden:
-                        logger.warning(f"Failed to remove UnixNodes VPS role from {user.name}")
+                        logger.warning(f"Failed to remove ShadowNodes VPS role from {user.name}")
         save_vps_data()
-        embed = create_success_embed("UnixNodes VPS Deleted Successfully")
+        embed = create_success_embed("ShadowNodes VPS Deleted Successfully")
         add_field(embed, "Owner", user.mention, True)
         add_field(embed, "VPS ID", f"#{vps_number}", True)
         add_field(embed, "Container", f"`{container_name}`", True)
@@ -1169,12 +1169,12 @@ async def add_resources(ctx, vps_id: str, ram: int = None, cpu: int = None, disk
         if found_vps:
             break
     if not found_vps:
-        await ctx.send(embed=create_error_embed("VPS Not Found", f"No UnixNodes VPS found with ID: `{vps_id}`"))
+        await ctx.send(embed=create_error_embed("VPS Not Found", f"NoShadowNodes VPS found with ID: `{vps_id}`"))
         return
     was_running = found_vps.get('status') == 'running' and not found_vps.get('suspended', False)
     disk_changed = disk is not None
     if was_running:
-        await ctx.send(embed=create_info_embed("Stopping VPS", f"Stopping UnixNodes VPS `{vps_id}` to apply resource changes..."))
+        await ctx.send(embed=create_info_embed("Stopping VPS", f"Stopping ShadowNodes VPS `{vps_id}` to apply resource changes..."))
         try:
             await execute_lxc(f"lxc stop {vps_id}")
             found_vps['status'] = 'stopped'
@@ -1235,16 +1235,16 @@ async def add_resources(ctx, vps_id: str, ram: int = None, cpu: int = None, disk
 async def admin_add(ctx, user: discord.Member):
     user_id = str(user.id)
     if user_id == str(MAIN_ADMIN_ID):
-        await ctx.send(embed=create_error_embed("Already Admin", "This user is already the main UnixNodes admin!"))
+        await ctx.send(embed=create_error_embed("Already Admin", "This user is already the main ShadowNodes admin!"))
         return
     if user_id in admin_data.get("admins", []):
-        await ctx.send(embed=create_error_embed("Already Admin", f"{user.mention} is already a UnixNodes admin!"))
+        await ctx.send(embed=create_error_embed("Already Admin", f"{user.mention} is already a ShadowNodes admin!"))
         return
     admin_data["admins"].append(user_id)
     save_admin_data()
-    await ctx.send(embed=create_success_embed("Admin Added", f"{user.mention} is now a UnixNodes admin!"))
+    await ctx.send(embed=create_success_embed("Admin Added", f"{user.mention} is now a ShadowNodes admin!"))
     try:
-        await user.send(embed=create_embed("ðŸŽ‰ UnixNodes Admin Role Granted", f"You are now a UnixNodes admin by {ctx.author.mention}", 0x00ff88))
+        await user.send(embed=create_embed("ðŸŽ‰ ShadowNodes Admin Role Granted", f"You are now a ShadowNodes admin by {ctx.author.mention}", 0x00ff88))
     except discord.Forbidden:
         await ctx.send(embed=create_info_embed("Notification Failed", f"Could not DM {user.mention}"))
 
@@ -1253,16 +1253,16 @@ async def admin_add(ctx, user: discord.Member):
 async def admin_remove(ctx, user: discord.Member):
     user_id = str(user.id)
     if user_id == str(MAIN_ADMIN_ID):
-        await ctx.send(embed=create_error_embed("Cannot Remove", "You cannot remove the main UnixNodes admin!"))
+        await ctx.send(embed=create_error_embed("Cannot Remove", "You cannot remove the main ShadowNodes admin!"))
         return
     if user_id not in admin_data.get("admins", []):
-        await ctx.send(embed=create_error_embed("Not Admin", f"{user.mention} is not a UnixNodes admin!"))
+        await ctx.send(embed=create_error_embed("Not Admin", f"{user.mention} is not a ShadowNodes admin!"))
         return
     admin_data["admins"].remove(user_id)
     save_admin_data()
-    await ctx.send(embed=create_success_embed("Admin Removed", f"{user.mention} is no longer a UnixNodes admin!"))
+    await ctx.send(embed=create_success_embed("Admin Removed", f"{user.mention} is no longer a ShadowNodes admin!"))
     try:
-        await user.send(embed=create_embed("âš ï¸ UnixNodes Admin Role Revoked", f"Your admin role was removed by {ctx.author.mention}", 0xff3366))
+        await user.send(embed=create_embed("âš ï¸ShadowNodes Admin Role Revoked", f"Your admin role was removed by {ctx.author.mention}", 0xff3366))
     except discord.Forbidden:
         await ctx.send(embed=create_info_embed("Notification Failed", f"Could not DM {user.mention}"))
 
@@ -1271,7 +1271,7 @@ async def admin_remove(ctx, user: discord.Member):
 async def admin_list(ctx):
     admins = admin_data.get("admins", [])
     main_admin = await bot.fetch_user(MAIN_ADMIN_ID)
-    embed = create_embed("ðŸ‘‘ UnixNodes Admin Team", "Current UnixNodes administrators:", 0x1a1a1a)
+    embed = create_embed("ðŸ‘‘ ShadowNodes Admin Team", "Current UnixNodes administrators:", 0x1a1a1a)
     add_field(embed, "ðŸ”° Main Admin", f"{main_admin.mention} (ID: {MAIN_ADMIN_ID})", False)
     if admins:
         admin_list = []
@@ -1284,7 +1284,7 @@ async def admin_list(ctx):
         admin_text = "\n".join(admin_list)
         add_field(embed, "ðŸ›¡ï¸ Admins", admin_text, False)
     else:
-        add_field(embed, "ðŸ›¡ï¸ Admins", "No additional UnixNodes admins", False)
+        add_field(embed, "ðŸ›¡ï¸ Admins", "No additional ShadowNodes admins", False)
     await ctx.send(embed=embed)
 
 @bot.command(name='userinfo')
@@ -1292,7 +1292,7 @@ async def admin_list(ctx):
 async def user_info(ctx, user: discord.Member):
     user_id = str(user.id)
     vps_list = vps_data.get(user_id, [])
-    embed = create_embed(f"UnixNodes User Information - {user.name}", f"Detailed information for {user.mention}", 0x1a1a1a)
+    embed = create_embed(f"ShadowNodes User Information - {user.name}", f"Detailed information for {user.mention}", 0x1a1a1a)
     add_field(embed, "ðŸ‘¤ User Details", f"**Name:** {user.name}\n**ID:** {user.id}\n**Joined:** {user.joined_at.strftime('%Y-%m-%d %H:%M:%S') if user.joined_at else 'Unknown'}", False)
     if vps_list:
         vps_info = []
@@ -1356,7 +1356,7 @@ async def server_stats(ctx):
                     running_vps += 1
             if vps.get('whitelisted', False):
                 whitelisted_vps += 1
-    embed = create_embed("ðŸ“Š UnixNodes Server Statistics", "Current UnixNodes server overview", 0x1a1a1a)
+    embed = create_embed("ðŸ“Š ShadowNodes Server Statistics", "Current UnixNodes server overview", 0x1a1a1a)
     add_field(embed, "ðŸ‘¥ Users", f"**Total Users:** {total_users}\n**Total Admins:** {len(admin_data.get('admins', [])) + 1}", False)
     add_field(embed, "ðŸ–¥ï¸ VPS", f"**Total VPS:** {total_vps}\n**Running:** {running_vps}\n**Suspended:** {suspended_vps}\n**Whitelisted:** {whitelisted_vps}\n**Stopped:** {total_vps - running_vps - suspended_vps}", False)
     add_field(embed, "ðŸ“ˆ Resources", f"**Total RAM:** {total_ram}GB\n**Total CPU:** {total_cpu} cores\n**Total Storage:** {total_storage}GB", False)
@@ -1376,13 +1376,13 @@ async def vps_info(ctx, container_name: str = None):
                         status_text += " (SUSPENDED)"
                     if vps.get('whitelisted', False):
                         status_text += " (WHITELISTED)"
-                    all_vps.append(f"**{user.name}** - UnixNodes VPS {i+1}: `{vps['container_name']}` - {status_text}")
+                    all_vps.append(f"**{user.name}** - ShadowNodes VPS {i+1}: `{vps['container_name']}` - {status_text}")
             except:
                 pass
         vps_text = "\n".join(all_vps)
         chunks = [vps_text[i:i+1024] for i in range(0, len(vps_text), 1024)]
         for idx, chunk in enumerate(chunks, 1):
-            embed = create_embed(f"ðŸ–¥ï¸ All UnixNodes VPS (Part {idx})", f"List of all UnixNodes VPS deployments", 0x1a1a1a)
+            embed = create_embed(f"ðŸ–¥ï¸ All ShadowNodes VPS (Part {idx})", f"List of all ShadowNodes VPS deployments", 0x1a1a1a)
             add_field(embed, "VPS List", chunk, False)
             await ctx.send(embed=embed)
     else:
@@ -1397,7 +1397,7 @@ async def vps_info(ctx, container_name: str = None):
             if found_vps:
                 break
         if not found_vps:
-            await ctx.send(embed=create_error_embed("VPS Not Found", f"No UnixNodes VPS found with container name: `{container_name}`"))
+            await ctx.send(embed=create_error_embed("VPS Not Found", f"No ShadowNodes VPS found with container name: `{container_name}`"))
             return
         suspended_text = " (SUSPENDED)" if found_vps.get('suspended', False) else ""
         whitelisted_text = " (WHITELISTED)" if found_vps.get('whitelisted', False) else ""
@@ -1432,14 +1432,14 @@ async def restart_vps(ctx, container_name: str):
                     vps['suspended'] = False
                     save_vps_data()
                     break
-        await ctx.send(embed=create_success_embed("VPS Restarted", f"UnixNodes VPS `{container_name}` has been restarted successfully!"))
+        await ctx.send(embed=create_success_embed("VPS Restarted", f"ShadowNodes VPS `{container_name}` has been restarted successfully!"))
     except Exception as e:
         await ctx.send(embed=create_error_embed("Restart Failed", f"Error: {str(e)}"))
 
 @bot.command(name='exec')
 @is_admin()
 async def execute_command(ctx, container_name: str, *, command: str):
-    await ctx.send(embed=create_info_embed("Executing Command", f"Running command in UnixNodes VPS `{container_name}`..."))
+    await ctx.send(embed=create_info_embed("Executing Command", f"Running command in ShadowNodes VPS `{container_name}`..."))
     try:
         proc = await asyncio.create_subprocess_exec(
             "lxc", "exec", container_name, "--", "bash", "-c", command,
@@ -1466,7 +1466,7 @@ async def execute_command(ctx, container_name: str, *, command: str):
 @bot.command(name='stop-vps-all')
 @is_admin()
 async def stop_all_vps(ctx):
-    embed = create_warning_embed("Stopping All UnixNodes VPS", "âš ï¸ **WARNING:** This will stop ALL running VPS on the UnixNodes server.\n\nThis action cannot be undone. Continue?")
+    embed = create_warning_embed("Stopping All ShadowNodes VPS", "âš ï¸ **WARNING:** This will stop ALL running VPS on the ShadowNodes server.\n\nThis action cannot be undone. Continue?")
     class ConfirmView(discord.ui.View):
         def __init__(self):
             super().__init__(timeout=60)
@@ -1490,13 +1490,13 @@ async def stop_all_vps(ctx):
                                 vps['suspended'] = False
                                 stopped_count += 1
                     save_vps_data()
-                    embed = create_success_embed("All UnixNodes VPS Stopped", f"Successfully stopped {stopped_count} VPS using `lxc stop --all --force`")
+                    embed = create_success_embed("AllShadowNodes VPS Stopped", f"Successfully stopped {stopped_count} VPS using `lxc stop --all --force`")
                     output_text = stdout.decode() if stdout else 'No output'
                     add_field(embed, "Command Output", f"```\n{output_text}\n```", False)
                     await interaction.followup.send(embed=embed)
                 else:
                     error_msg = stderr.decode() if stderr else "Unknown error"
-                    embed = create_error_embed("Stop Failed", f"Failed to stop UnixNodes VPS: {error_msg}")
+                    embed = create_error_embed("Stop Failed", f"Failed to stop ShadowNodes VPS: {error_msg}")
                     await interaction.followup.send(embed=embed)
             except Exception as e:
                 embed = create_error_embed("Error", f"Error stopping VPS: {str(e)}")
@@ -1504,7 +1504,7 @@ async def stop_all_vps(ctx):
 
         @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
         async def cancel(self, interaction: discord.Interaction, item: discord.ui.Button):
-            await interaction.response.edit_message(embed=create_info_embed("Operation Cancelled", "The stop all UnixNodes VPS operation has been cancelled."))
+            await interaction.response.edit_message(embed=create_info_embed("Operation Cancelled", "The stop all ShadowNodes VPS operation has been cancelled."))
     await ctx.send(embed=embed, view=ConfirmView())
 
 @bot.command(name='cpu-monitor')
@@ -1513,16 +1513,16 @@ async def resource_monitor_control(ctx, action: str = "status"):
     global resource_monitor_active
     if action.lower() == "status":
         status = "Active" if resource_monitor_active else "Inactive"
-        embed = create_embed("UnixNodes Resource Monitor Status", f"UnixNodes resource monitoring is currently **{status}**", 0x00ccff if resource_monitor_active else 0xffaa00)
+        embed = create_embed("UnixNodes Resource Monitor Status", f"ShadowNodes resource monitoring is currently **{status}**", 0x00ccff if resource_monitor_active else 0xffaa00)
         add_field(embed, "Thresholds", f"{CPU_THRESHOLD}% CPU / {RAM_THRESHOLD}% RAM usage", True)
         add_field(embed, "Check Interval", f"60 seconds (host)", True)
         await ctx.send(embed=embed)
     elif action.lower() == "enable":
         resource_monitor_active = True
-        await ctx.send(embed=create_success_embed("Resource Monitor Enabled", "UnixNodes resource monitoring has been enabled."))
+        await ctx.send(embed=create_success_embed("Resource Monitor Enabled", "ShadowNodes resource monitoring has been enabled."))
     elif action.lower() == "disable":
         resource_monitor_active = False
-        await ctx.send(embed=create_warning_embed("Resource Monitor Disabled", "UnixNodes resource monitoring has been disabled."))
+        await ctx.send(embed=create_warning_embed("Resource Monitor Disabled", "ShadowNodes resource monitoring has been disabled."))
     else:
         await ctx.send(embed=create_error_embed("Invalid Action", "Use: `!cpu-monitor <status|enable|disable>`"))
 
@@ -1545,12 +1545,12 @@ async def resize_vps(ctx, container_name: str, ram: int = None, cpu: int = None,
         if found_vps:
             break
     if not found_vps:
-        await ctx.send(embed=create_error_embed("VPS Not Found", f"No UnixNodes VPS found with container name: `{container_name}`"))
+        await ctx.send(embed=create_error_embed("VPS Not Found", f"No ShadowNodes VPS found with container name: `{container_name}`"))
         return
     was_running = found_vps.get('status') == 'running' and not found_vps.get('suspended', False)
     disk_changed = disk is not None
     if was_running:
-        await ctx.send(embed=create_info_embed("Stopping VPS", f"Stopping UnixNodes VPS `{container_name}` to apply resource changes..."))
+        await ctx.send(embed=create_info_embed("Stopping VPS", f"Stopping ShadowNodes VPS `{container_name}` to apply resource changes..."))
         try:
             await execute_lxc(f"lxc stop {container_name}")
             found_vps['status'] = 'stopped'
@@ -1593,7 +1593,7 @@ async def resize_vps(ctx, container_name: str, ram: int = None, cpu: int = None,
             found_vps['status'] = 'running'
             save_vps_data()
 
-        embed = create_success_embed("VPS Resized", f"Successfully resized resources for UnixNodes VPS `{container_name}`")
+        embed = create_success_embed("VPS Resized", f"Successfully resized resources for ShadowNodes VPS `{container_name}`")
         add_field(embed, "Changes Applied", "\n".join(changes), False)
         if disk_changed:
             add_field(embed, "Disk Note", "Run `sudo resize2fs /` inside the VPS to expand the filesystem.", False)
@@ -1608,7 +1608,7 @@ async def clone_vps(ctx, container_name: str, new_name: str = None):
     if not new_name:
         timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
         new_name = f"unixnodes-{container_name}-clone-{timestamp}"
-    await ctx.send(embed=create_info_embed("Cloning VPS", f"Cloning UnixNodes VPS `{container_name}` to `{new_name}`..."))
+    await ctx.send(embed=create_info_embed("Cloning VPS", f"Cloning ShadowNodes VPS `{container_name}` to `{new_name}`..."))
     try:
         found_vps = None
         user_id = None
@@ -1623,7 +1623,7 @@ async def clone_vps(ctx, container_name: str, new_name: str = None):
                 break
 
         if not found_vps:
-            await ctx.send(embed=create_error_embed("VPS Not Found", f"No UnixNodes VPS found with container name: `{container_name}`"))
+            await ctx.send(embed=create_error_embed("VPS Not Found", f"No ShadowNodes VPS found with container name: `{container_name}`"))
             return
 
         await execute_lxc(f"lxc copy {container_name} {new_name}")
@@ -1646,7 +1646,7 @@ async def clone_vps(ctx, container_name: str, new_name: str = None):
         vps_data[user_id].append(new_vps)
         save_vps_data()
 
-        embed = create_success_embed("VPS Cloned", f"Successfully cloned UnixNodes VPS `{container_name}` to `{new_name}`")
+        embed = create_success_embed("VPS Cloned", f"Successfully cloned ShadowNodes VPS `{container_name}` to `{new_name}`")
         add_field(embed, "New VPS Details", f"**RAM:** {new_vps['ram']}\n**CPU:** {new_vps['cpu']} Cores\n**Storage:** {new_vps['storage']}", False)
         add_field(embed, "Features", "Nesting, Privileged, FUSE, Kernel Modules (Docker Ready)", False)
         await ctx.send(embed=embed)
@@ -1661,7 +1661,7 @@ async def migrate_vps(ctx, container_name: str, target_pool: str):
     try:
         await execute_lxc(f"lxc stop {container_name}")
 
-        temp_name = f"unixnodes-{container_name}-temp-{int(time.time())}"
+        temp_name = f"ShadowNodes-{container_name}-temp-{int(time.time())}"
 
         await execute_lxc(f"lxc copy {container_name} {temp_name} -s {target_pool}")
 
@@ -1681,7 +1681,7 @@ async def migrate_vps(ctx, container_name: str, target_pool: str):
                     save_vps_data()
                     break
 
-        await ctx.send(embed=create_success_embed("VPS Migrated", f"Successfully migrated UnixNodes VPS `{container_name}` to storage pool `{target_pool}`"))
+        await ctx.send(embed=create_success_embed("VPS Migrated", f"Successfully migrated ShadowNodes VPS `{container_name}` to storage pool `{target_pool}`"))
 
     except Exception as e:
         await ctx.send(embed=create_error_embed("Migration Failed", f"Error: {str(e)}"))
@@ -1689,7 +1689,7 @@ async def migrate_vps(ctx, container_name: str, target_pool: str):
 @bot.command(name='vps-stats')
 @is_admin()
 async def vps_stats(ctx, container_name: str):
-    await ctx.send(embed=create_info_embed("Gathering Statistics", f"Collecting statistics for UnixNodes VPS `{container_name}`..."))
+    await ctx.send(embed=create_info_embed("Gathering Statistics", f"Collecting statistics for ShadowNodes VPS `{container_name}`..."))
     try:
         status = await get_container_status(container_name)
         cpu_usage = await get_container_cpu(container_name)
@@ -1709,7 +1709,7 @@ async def vps_stats(ctx, container_name: str):
                 network_usage = line.split(":")[1].strip()
                 break
 
-        embed = create_embed(f"ðŸ“Š UnixNodes VPS Statistics - {container_name}", f"Resource usage statistics", 0x1a1a1a)
+        embed = create_embed(f"ðŸ“Š ShadowNodes VPS Statistics - {container_name}", f"Resource usage statistics", 0x1a1a1a)
         add_field(embed, "ðŸ“ˆ Status", f"**{status.upper()}**", False)
         add_field(embed, "ðŸ’» CPU Usage", f"**{cpu_usage}**", True)
         add_field(embed, "ðŸ§  Memory Usage", f"**{memory_usage}**", True)
@@ -1758,7 +1758,7 @@ async def vps_network(ctx, container_name: str, action: str, value: str = None):
                 if len(output) > 1000:
                     output = output[:1000] + "\n... (truncated)"
 
-                embed = create_embed(f"ðŸŒ UnixNodes Network Interfaces - {container_name}", "Network configuration", 0x1a1a1a)
+                embed = create_embed(f"ðŸŒ ShadowNodes Network Interfaces - {container_name}", "Network configuration", 0x1a1a1a)
                 add_field(embed, "Interfaces", f"```\n{output}\n```", False)
                 await ctx.send(embed=embed)
             else:
@@ -1767,15 +1767,15 @@ async def vps_network(ctx, container_name: str, action: str, value: str = None):
         elif action.lower() == "limit" and value:
             await execute_lxc(f"lxc config device set {container_name} eth0 limits.egress {value}")
             await execute_lxc(f"lxc config device set {container_name} eth0 limits.ingress {value}")
-            await ctx.send(embed=create_success_embed("Network Limited", f"Set UnixNodes network limit to {value} for `{container_name}`"))
+            await ctx.send(embed=create_success_embed("Network Limited", f"Set ShadowNodes network limit to {value} for `{container_name}`"))
 
         elif action.lower() == "add" and value:
             await execute_lxc(f"lxc config device add {container_name} eth1 nic nictype=bridged parent={value}")
-            await ctx.send(embed=create_success_embed("Network Added", f"Added network interface to UnixNodes VPS `{container_name}` with bridge `{value}`"))
+            await ctx.send(embed=create_success_embed("Network Added", f"Added network interface to ShadowNodes VPS `{container_name}` with bridge `{value}`"))
 
         elif action.lower() == "remove" and value:
             await execute_lxc(f"lxc config device remove {container_name} {value}")
-            await ctx.send(embed=create_success_embed("Network Removed", f"Removed network interface `{value}` from UnixNodes VPS `{container_name}`"))
+            await ctx.send(embed=create_success_embed("Network Removed", f"Removed network interface `{value}` from ShadowNodes VPS `{container_name}`"))
 
         else:
             await ctx.send(embed=create_error_embed("Invalid Parameters", "Please provide valid parameters for the action"))
@@ -1785,7 +1785,7 @@ async def vps_network(ctx, container_name: str, action: str, value: str = None):
 @bot.command(name='vps-processes')
 @is_admin()
 async def vps_processes(ctx, container_name: str):
-    await ctx.send(embed=create_info_embed("Gathering Processes", f"Listing processes in UnixNodes VPS `{container_name}`..."))
+    await ctx.send(embed=create_info_embed("Gathering Processes", f"Listing processes in ShadowNodes VPS `{container_name}`..."))
     try:
         proc = await asyncio.create_subprocess_exec(
             "lxc", "exec", container_name, "--", "ps", "aux",
@@ -1799,7 +1799,7 @@ async def vps_processes(ctx, container_name: str):
             if len(output) > 1000:
                 output = output[:1000] + "\n... (truncated)"
 
-            embed = create_embed(f"âš™ï¸ UnixNodes Processes - {container_name}", "Running processes", 0x1a1a1a)
+            embed = create_embed(f"âš™ï¸ ShadowNodes Processes - {container_name}", "Running processes", 0x1a1a1a)
             add_field(embed, "Process List", f"```\n{output}\n```", False)
             await ctx.send(embed=embed)
         else:
@@ -1847,7 +1847,7 @@ async def suspend_vps(ctx, container_name: str, *, reason: str = "Admin action")
         for vps in lst:
             if vps['container_name'] == container_name:
                 if vps.get('status') != 'running':
-                    await ctx.send(embed=create_error_embed("Cannot Suspend", "UnixNodes VPS must be running to suspend."))
+                    await ctx.send(embed=create_error_embed("Cannot Suspend", "ShadowNodes VPS must be running to suspend."))
                     return
                 try:
                     await execute_lxc(f"lxc stop {container_name}")
@@ -1866,17 +1866,17 @@ async def suspend_vps(ctx, container_name: str, *, reason: str = "Admin action")
                     return
                 try:
                     owner = await bot.fetch_user(int(uid))
-                    embed = create_warning_embed("ðŸš¨ UnixNodes VPS Suspended", f"Your VPS `{container_name}` has been suspended by an admin.\n\n**Reason:** {reason}\n\nContact a UnixNodes admin to unsuspend.")
+                    embed = create_warning_embed("ðŸš¨ ShadowNodes VPS Suspended", f"Your VPS `{container_name}` has been suspended by an admin.\n\n**Reason:** {reason}\n\nContact a UnixNodes admin to unsuspend.")
                     await owner.send(embed=embed)
                 except Exception as dm_e:
                     logger.error(f"Failed to DM owner {uid}: {dm_e}")
-                await ctx.send(embed=create_success_embed("VPS Suspended", f"UnixNodes VPS `{container_name}` suspended. Reason: {reason}"))
+                await ctx.send(embed=create_success_embed("VPS Suspended", f"ShadowNodes VPS `{container_name}` suspended. Reason: {reason}"))
                 found = True
                 break
         if found:
             break
     if not found:
-        await ctx.send(embed=create_error_embed("Not Found", f"UnixNodes VPS `{container_name}` not found."))
+        await ctx.send(embed=create_error_embed("Not Found", f"ShadowNodes VPS `{container_name}` not found."))
 
 @bot.command(name='unsuspend-vps')
 @is_admin()
@@ -1886,20 +1886,20 @@ async def unsuspend_vps(ctx, container_name: str):
         for vps in lst:
             if vps['container_name'] == container_name:
                 if not vps.get('suspended', False):
-                    await ctx.send(embed=create_error_embed("Not Suspended", "UnixNodes VPS is not suspended."))
+                    await ctx.send(embed=create_error_embed("Not Suspended", "ShadowNodes VPS is not suspended."))
                     return
                 try:
                     vps['suspended'] = False
                     vps['status'] = 'running'
                     await execute_lxc(f"lxc start {container_name}")
                     save_vps_data()
-                    await ctx.send(embed=create_success_embed("VPS Unsuspended", f"UnixNodes VPS `{container_name}` unsuspended and started."))
+                    await ctx.send(embed=create_success_embed("VPS Unsuspended", f"ShadowNodes VPS `{container_name}` unsuspended and started."))
                     found = True
                 except Exception as e:
                     await ctx.send(embed=create_error_embed("Start Failed", str(e)))
                 try:
                     owner = await bot.fetch_user(int(uid))
-                    embed = create_success_embed("ðŸŸ¢ UnixNodes VPS Unsuspended", f"Your VPS `{container_name}` has been unsuspended by an admin.\nYou can now manage it again.")
+                    embed = create_success_embed("ðŸŸ¢ ShadowNodes VPS Unsuspended", f"Your VPS `{container_name}` has been unsuspended by an admin.\nYou can now manage it again.")
                     await owner.send(embed=embed)
                 except Exception as dm_e:
                     logger.error(f"Failed to DM owner {uid} about unsuspension: {dm_e}")
@@ -1907,7 +1907,7 @@ async def unsuspend_vps(ctx, container_name: str):
         if found:
             break
     if not found:
-        await ctx.send(embed=create_error_embed("Not Found", f"UnixNodes VPS `{container_name}` not found."))
+        await ctx.send(embed=create_error_embed("Not Found", f"ShadowNodes VPS `{container_name}` not found."))
 
 @bot.command(name='suspension-logs')
 @is_admin()
@@ -1922,13 +1922,13 @@ async def suspension_logs(ctx, container_name: str = None):
             if found:
                 break
         if not found:
-            await ctx.send(embed=create_error_embed("Not Found", f"UnixNodes VPS `{container_name}` not found."))
+            await ctx.send(embed=create_error_embed("Not Found", f"ShadowNodes VPS `{container_name}` not found."))
             return
         history = found.get('suspension_history', [])
         if not history:
-            await ctx.send(embed=create_info_embed("No Suspensions", f"No UnixNodes suspension history for `{container_name}`."))
+            await ctx.send(embed=create_info_embed("No Suspensions", f"No ShadowNodes suspension history for `{container_name}`."))
             return
-        embed = create_embed("UnixNodes Suspension History", f"For `{container_name}`")
+        embed = create_embed("ShadowNodes Suspension History", f"For `{container_name}`")
         text = []
         for h in sorted(history, key=lambda x: x['time'], reverse=True)[:10]:
             t = datetime.fromisoformat(h['time']).strftime('%Y-%m-%d %H:%M:%S')
@@ -1946,12 +1946,12 @@ async def suspension_logs(ctx, container_name: str = None):
                     t = datetime.fromisoformat(event['time']).strftime('%Y-%m-%d %H:%M')
                     all_logs.append(f"**{t}** - VPS `{vps['container_name']}` (Owner: <@{uid}>) - {event['reason']} (by {event['by']})")
         if not all_logs:
-            await ctx.send(embed=create_info_embed("No Suspensions", "No UnixNodes suspension events recorded."))
+            await ctx.send(embed=create_info_embed("No Suspensions", "No ShadowNodes suspension events recorded."))
             return
         logs_text = "\n".join(all_logs)
         chunks = [logs_text[i:i+1024] for i in range(0, len(logs_text), 1024)]
         for idx, chunk in enumerate(chunks, 1):
-            embed = create_embed(f"UnixNodes Suspension Logs (Part {idx})", f"Global suspension events (newest first)")
+            embed = create_embed(f"ShadowNodes Suspension Logs (Part {idx})", f"Global suspension events (newest first)")
             add_field(embed, "Events", chunk, False)
             await ctx.send(embed=embed)
 
@@ -1977,7 +1977,7 @@ async def apply_permissions(ctx, container_name: str):
                     save_vps_data()
                     break
 
-        await ctx.send(embed=create_success_embed("Permissions Applied", f"Advanced permissions applied to UnixNodes VPS `{container_name}`. Docker-ready!"))
+        await ctx.send(embed=create_success_embed("Permissions Applied", f"Advanced permissions applied to ShadowNodes VPS `{container_name}`. Docker-ready!"))
     except Exception as e:
         await ctx.send(embed=create_error_embed("Apply Failed", f"Error: {str(e)}"))
 
@@ -2010,7 +2010,7 @@ async def resource_check(ctx):
                         save_vps_data()
                         try:
                             owner = await bot.fetch_user(int(user_id))
-                            warn_embed = create_warning_embed("ðŸš¨ VPS Auto-Suspended", f"Your VPS `{container}` has been automatically suspended due to high resource usage.\n\n**Reason:** {reason}\n\nContact UnixNodes admin to unsuspend and address the issue.")
+                            warn_embed = create_warning_embed("ðŸš¨ VPS Auto-Suspended", f"Your VPS `{container}` has been automatically suspended due to high resource usage.\n\n**Reason:** {reason}\n\nContact ShadowNodes admin to unsuspend and address the issue.")
                             await owner.send(embed=warn_embed)
                         except Exception as dm_e:
                             logger.error(f"Failed to DM owner {user_id}: {dm_e}")
@@ -2043,7 +2043,7 @@ async def whitelist_vps(ctx, container_name: str, action: str):
         if found:
             break
     if not found:
-        await ctx.send(embed=create_error_embed("Not Found", f"UnixNodes VPS `{container_name}` not found."))
+        await ctx.send(embed=create_error_embed("Not Found", f"ShadowNodes VPS `{container_name}` not found."))
 
 @bot.command(name='snapshot')
 @is_admin()
@@ -2051,7 +2051,7 @@ async def snapshot_vps(ctx, container_name: str, snap_name: str = "snap0"):
     await ctx.send(embed=create_info_embed("Creating Snapshot", f"Creating snapshot '{snap_name}' for `{container_name}`..."))
     try:
         await execute_lxc(f"lxc snapshot {container_name} {snap_name}")
-        await ctx.send(embed=create_success_embed("Snapshot Created", f"Snapshot '{snap_name}' created for UnixNodes VPS `{container_name}`."))
+        await ctx.send(embed=create_success_embed("Snapshot Created", f"Snapshot '{snap_name}' created for ShadowNodes VPS `{container_name}`."))
     except Exception as e:
         await ctx.send(embed=create_error_embed("Snapshot Failed", f"Error: {str(e)}"))
 
@@ -2101,29 +2101,29 @@ async def show_help(ctx):
     user_id = str(ctx.author.id)
     is_user_admin = user_id == str(MAIN_ADMIN_ID) or user_id in admin_data.get("admins", [])
     is_user_main_admin = user_id == str(MAIN_ADMIN_ID)
-    embed = create_embed("ðŸ“š UnixNodes Command Help - User Commands", "UnixNodes VPS Manager Commands:", 0x1a1a1a)
+    embed = create_embed("ðŸ“š UnixNodes Command Help - User Commands", "ShadowNodes VPS Manager Commands:", 0x1a1a1a)
     user_commands = [
-        ("!ping", "Check UnixNodes bot latency"),
+        ("!ping", "Check ShadowNodes bot latency"),
         ("!uptime", "Show host uptime"),
-        ("!myvps", "List your UnixNodes VPS"),
+        ("!myvps", "List your ShadowNodes VPS"),
         ("!manage [@user]", "Manage your VPS or another user's VPS (Admin only)"),
-        ("!share-user @user <vps_number>", "Share UnixNodes VPS access"),
-        ("!share-ruser @user <vps_number>", "Revoke UnixNodes VPS access"),
+        ("!share-user @user <vps_number>", "Share ShadowNodes VPS access"),
+        ("!share-ruser @user <vps_number>", "Revoke ShadowNodes VPS access"),
         ("!manage-shared @owner <vps_number>", "Manage shared UnixNodes VPS")
     ]
     user_commands_text = "\n".join([f"**{cmd}** - {desc}" for cmd, desc in user_commands])
     add_field(embed, "ðŸ‘¤ User Commands", user_commands_text, False)
     await ctx.send(embed=embed)
     if is_user_admin:
-        embed = create_embed("ðŸ“š UnixNodes Command Help - Admin Commands", "UnixNodes VPS Manager Commands:", 0x1a1a1a)
+        embed = create_embed("ðŸ“š UnixNodes Command Help - Admin Commands", "ShadowNodes VPS Manager Commands:", 0x1a1a1a)
         admin_commands = [
             ("!lxc-list", "List all LXC containers"),
             ("!create <ram_gb> <cpu_cores> <disk_gb> @user", "Create VPS with OS selection"),
-            ("!delete-vps @user <vps_number> [reason]", "Delete user's UnixNodes VPS"),
+            ("!delete-vps @user <vps_number> [reason]", "Delete user'sShadowNodes VPS"),
             ("!add-resources <container> [ram] [cpu] [disk]", "Add resources to UnixNodes VPS"),
-            ("!resize-vps <container> [ram] [cpu] [disk]", "Resize UnixNodes VPS resources"),
-            ("!suspend-vps <container> [reason]", "Suspend UnixNodes VPS"),
-            ("!unsuspend-vps <container>", "Unsuspend UnixNodes VPS"),
+            ("!resize-vps <container> [ram] [cpu] [disk]", "Resize ShadowNodes VPS resources"),
+            ("!suspend-vps <container> [reason]", "Suspend ShadowNodes VPS"),
+            ("!unsuspend-vps <container>", "Unsuspend ShadowNodes VPS"),
             ("!suspension-logs [container]", "View suspension logs"),
             ("!whitelist-vps <container> <add|remove>", "Whitelist VPS from auto-suspend"),
             ("!resource-check", "Check and suspend high-usage VPS"),
@@ -2154,7 +2154,7 @@ async def show_help(ctx):
         add_field(embed, "ðŸ›¡ï¸ Admin Commands", admin_commands_text, False)
         await ctx.send(embed=embed)
     if is_user_main_admin:
-        embed = create_embed("ðŸ“š UnixNodes Command Help - Main Admin Commands", "UnixNodes VPS Manager Commands:", 0x1a1a1a)
+        embed = create_embed("ðŸ“š UnixNodes Command Help - Main Admin Commands", "ShadowNodes VPS Manager Commands:", 0x1a1a1a)
         main_admin_commands = [
             ("!admin-add @user", "Add admin"),
             ("!admin-remove @user", "Remove admin"),
@@ -2162,13 +2162,13 @@ async def show_help(ctx):
         ]
         main_admin_commands_text = "\n".join([f"**{cmd}** - {desc}" for cmd, desc in main_admin_commands])
         add_field(embed, "ðŸ‘‘ Main Admin Commands", main_admin_commands_text, False)
-        embed.set_footer(text="UnixNodes VPS Manager â€¢ Auto-suspend high-usage only â€¢ Whitelist support â€¢ Multi-OS â€¢ Enhanced monitoring â€¢ Docker-ready VPS â€¢ Snapshots")
+        embed.set_footer(text="ShadowNodes VPS Manager â€¢ Auto-suspend high-usage only â€¢ Whitelist support â€¢ Multi-OS â€¢ Enhanced monitoring â€¢ Docker-ready VPS â€¢ Snapshots")
         await ctx.send(embed=embed)
 
 # Command aliases for typos
 @bot.command(name='mangage')
 async def manage_typo(ctx):
-    await ctx.send(embed=create_info_embed("Command Correction", "Did you mean `!manage`? Use the correct UnixNodes command."))
+    await ctx.send(embed=create_info_embed("Command Correction", "Did you mean `!manage`? Use the correct ShadowNodes command."))
 
 @bot.command(name='stats')
 async def stats_alias(ctx):
@@ -2185,7 +2185,7 @@ async def info_alias(ctx, user: discord.Member = None):
         else:
             await ctx.send(embed=create_error_embed("Usage", "Please specify a user: `!info @user`"))
     else:
-        await ctx.send(embed=create_error_embed("Access Denied", "This UnixNodes command requires admin privileges."))
+        await ctx.send(embed=create_error_embed("Access Denied", "This ShadowNodes command requires admin privileges."))
 
 # Run the bot
 if __name__ == "__main__":
