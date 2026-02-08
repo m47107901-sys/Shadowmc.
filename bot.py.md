@@ -212,9 +212,9 @@ def create_embed(title, description="", color=0x1a1a1a):
         description=truncate_text(description, 4096),
         color=color
     )
-    embed.set_thumbnail(url="https://i.imgur.com/xSsIERx.png")
+    embed.set_thumbnail(url="[https://i.imgur.com/xSsIERx.png](https://i.postimg.cc/SQwpQzPN/file-000000008bb072099b2a1e1db9b20860.png)")
     embed.set_footer(text=f"UnixNodes VPS Manager â€¢ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-                     icon_url="https://i.imgur.com/xSsIERx.png")
+                     icon_url="https://i.postimg.cc/SQwpQzPN/file-000000008bb072099b2a1e1db9b20860.png")
     return embed
 
 def add_field(embed, name, value, inline=False):
@@ -243,7 +243,7 @@ def is_admin():
         user_id = str(ctx.author.id)
         if user_id == str(MAIN_ADMIN_ID) or user_id in admin_data.get("admins", []):
             return True
-        raise commands.CheckFailure("You need admin permissions to use this command. Contact UnixNodes support.")
+        raise commands.CheckFailure("You need admin permissions to use this command. Contact ShadowNodes support.")
     return commands.check(predicate)
 
 def is_main_admin():
@@ -306,14 +306,14 @@ async def get_or_create_vps_role(guild):
         role = await guild.create_role(
             name="UnixNodes VPS User",
             color=discord.Color.dark_purple(),
-            reason="UnixNodes VPS User role for bot management",
+            reason="ShadowNodes VPS User role for bot management",
             permissions=discord.Permissions.none()
         )
         VPS_USER_ROLE_ID = role.id
-        logger.info(f"Created UnixNodes VPS User role: {role.name} (ID: {role.id})")
+        logger.info(f"CreatedShadowNodes VPS User role: {role.name} (ID: {role.id})")
         return role
     except Exception as e:
-        logger.error(f"Failed to create UnixNodes VPS User role: {e}")
+        logger.error(f"Failed to create ShadowNodes VPS User role: {e}")
         return None
 
 # Host resource monitoring functions
@@ -533,7 +533,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.BadArgument):
         await ctx.send(embed=create_error_embed("Invalid Argument", "Please check your input and try again."))
     elif isinstance(error, commands.CheckFailure):
-        error_msg = str(error) if str(error) else "You need admin permissions for this command. Contact UnixNodes support."
+        error_msg = str(error) if str(error) else "You need admin permissions for this command. Contact ShadowNodes support."
         await ctx.send(embed=create_error_embed("Access Denied", error_msg))
     elif isinstance(error, discord.NotFound):
         await ctx.send(embed=create_error_embed("Error", "The requested resource was not found. Please try again."))
@@ -545,7 +545,7 @@ async def on_command_error(ctx, error):
 @bot.command(name='ping')
 async def ping(ctx):
     latency = round(bot.latency * 1000)
-    embed = create_success_embed("Pong!", f"UnixNodes Bot latency: {latency}ms")
+    embed = create_success_embed("Pong!", f"ShadowNodes Bot latency: {latency}ms")
     await ctx.send(embed=embed)
 
 @bot.command(name='uptime')
@@ -595,7 +595,7 @@ async def my_vps(ctx):
     user_id = str(ctx.author.id)
     vps_list = vps_data.get(user_id, [])
     if not vps_list:
-        embed = create_error_embed("No VPS Found", "You don't have any UnixNodes VPS. Contact an admin to create one.")
+        embed = create_error_embed("No VPS Found", "You don't have any ShadowNodes VPS. Contact an admin to create one.")
         add_field(embed, "Quick Actions", "â€¢ `!manage` - Manage VPS\nâ€¢ Contact UnixNodes admin for VPS creation", False)
         await ctx.send(embed=embed)
         return
@@ -683,7 +683,7 @@ class OSSelectView(discord.ui.View):
                     try:
                         await self.user.add_roles(vps_role, reason="ShadowNodes VPS ownership granted")
                     except discord.Forbidden:
-                        logger.warning(f"Failed to assign UnixNodes VPS role to {self.user.name}")
+                        logger.warning(f"Failed to assign ShadowNodes VPS role to {self.user.name}")
             success_embed = create_success_embed("ShadowNodes VPS Created Successfully")
             add_field(success_embed, "Owner", self.user.mention, True)
             add_field(success_embed, "VPS ID", f"#{vps_count}", True)
@@ -736,7 +736,7 @@ class ManageView(discord.ui.View):
                     value=str(i)
                 ) for i, v in enumerate(vps_list)
             ]
-            self.select = discord.ui.Select(placeholder="Select a UnixNodes VPS to manage", options=options)
+            self.select = discord.ui.Select(placeholder="Select a ShadowNodes VPS to manage", options=options)
             self.select.callback = self.select_vps
             self.add_item(self.select)
             self.initial_embed = create_embed("ShadowNodes VPS Management", "Select a VPS from the dropdown menu below.", 0x1a1a1a)
@@ -859,7 +859,7 @@ class ManageView(discord.ui.View):
                 await interaction.response.send_message(embed=create_error_embed("Access Denied", "Only the ShadowNodes VPS owner can reinstall!"), ephemeral=True)
                 return
             if suspended:
-                await interaction.response.send_message(embed=create_error_embed("Cannot Reinstall", "Unsuspend the UnixNodes VPS first."), ephemeral=True)
+                await interaction.response.send_message(embed=create_error_embed("Cannot Reinstall", "Unsuspend the ShadowNodes VPS first."), ephemeral=True)
                 return
             os_version = target_vps.get('os_version', 'ubuntu:22.04')
             confirm_embed = create_warning_embed("UnixNodes Reinstall Warning",
@@ -900,7 +900,7 @@ class ManageView(discord.ui.View):
                         config_str = f"{ram_gb}GB RAM / {original_cpu} CPU / {storage_gb}GB Disk"
                         target_vps["config"] = config_str
                         save_vps_data()
-                        await inter.followup.send(embed=create_success_embed("Reinstall Complete", f"UnixNodes VPS `{self.container_name}` has been successfully reinstalled!"), ephemeral=True)
+                        await inter.followup.send(embed=create_success_embed("Reinstall Complete", f"ShadowNodes VPS `{self.container_name}` has been successfully reinstalled!"), ephemeral=True)
                         new_embed = await self.parent_view.create_vps_embed(self.parent_view.selected_index)
                         await inter.followup.send(embed=new_embed, view=self.parent_view, ephemeral=True)
                     except Exception as e:
@@ -1422,7 +1422,7 @@ async def vps_info(ctx, container_name: str = None):
 @bot.command(name='restart-vps')
 @is_admin()
 async def restart_vps(ctx, container_name: str):
-    await ctx.send(embed=create_info_embed("Restarting VPS", f"Restarting UnixNodes VPS `{container_name}`..."))
+    await ctx.send(embed=create_info_embed("Restarting VPS", f"Restarting ShadowNodes VPS `{container_name}`..."))
     try:
         await execute_lxc(f"lxc restart {container_name}")
         for user_id, vps_list in vps_data.items():
@@ -1490,7 +1490,7 @@ async def stop_all_vps(ctx):
                                 vps['suspended'] = False
                                 stopped_count += 1
                     save_vps_data()
-                    embed = create_success_embed("AllShadowNodes VPS Stopped", f"Successfully stopped {stopped_count} VPS using `lxc stop --all --force`")
+                    embed = create_success_embed("All ShadowNodes VPS Stopped", f"Successfully stopped {stopped_count} VPS using `lxc stop --all --force`")
                     output_text = stdout.decode() if stdout else 'No output'
                     add_field(embed, "Command Output", f"```\n{output_text}\n```", False)
                     await interaction.followup.send(embed=embed)
@@ -1810,7 +1810,7 @@ async def vps_processes(ctx, container_name: str):
 @bot.command(name='vps-logs')
 @is_admin()
 async def vps_logs(ctx, container_name: str, lines: int = 50):
-    await ctx.send(embed=create_info_embed("Gathering Logs", f"Fetching last {lines} lines from UnixNodes VPS `{container_name}`..."))
+    await ctx.send(embed=create_info_embed("Gathering Logs", f"Fetching last {lines} lines from ShadowNodes VPS `{container_name}`..."))
     try:
         proc = await asyncio.create_subprocess_exec(
             "lxc", "exec", container_name, "--", "journalctl", "-n", str(lines),
@@ -2101,7 +2101,7 @@ async def show_help(ctx):
     user_id = str(ctx.author.id)
     is_user_admin = user_id == str(MAIN_ADMIN_ID) or user_id in admin_data.get("admins", [])
     is_user_main_admin = user_id == str(MAIN_ADMIN_ID)
-    embed = create_embed("ðŸ“š UnixNodes Command Help - User Commands", "ShadowNodes VPS Manager Commands:", 0x1a1a1a)
+    embed = create_embed("ðŸ“š ShadowNodes Command Help - User Commands", "ShadowNodes VPS Manager Commands:", 0x1a1a1a)
     user_commands = [
         ("!ping", "Check ShadowNodes bot latency"),
         ("!uptime", "Show host uptime"),
@@ -2115,7 +2115,7 @@ async def show_help(ctx):
     add_field(embed, "ðŸ‘¤ User Commands", user_commands_text, False)
     await ctx.send(embed=embed)
     if is_user_admin:
-        embed = create_embed("ðŸ“š UnixNodes Command Help - Admin Commands", "ShadowNodes VPS Manager Commands:", 0x1a1a1a)
+        embed = create_embed("ðŸ“š ShadowNodes Command Help - Admin Commands", "ShadowNodes VPS Manager Commands:", 0x1a1a1a)
         admin_commands = [
             ("!lxc-list", "List all LXC containers"),
             ("!create <ram_gb> <cpu_cores> <disk_gb> @user", "Create VPS with OS selection"),
