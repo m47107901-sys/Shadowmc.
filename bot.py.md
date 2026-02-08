@@ -930,7 +930,7 @@ class ManageView(discord.ui.View):
                 await execute_lxc(f"lxc stop {container_name}", timeout=120)
                 target_vps["status"] = "stopped"
                 save_vps_data()
-                await interaction.followup.send(embed=create_success_embed("VPS Stopped", f"UnixNodes VPS `{container_name}` has been stopped!"), ephemeral=True)
+                await interaction.followup.send(embed=create_success_embed("VPS Stopped", f"ShadowNodes VPS `{container_name}` has been stopped!"), ephemeral=True)
             except Exception as e:
                 await interaction.followup.send(embed=create_error_embed("Stop Failed", str(e)), ephemeral=True)
         elif action == 'tmate':
@@ -949,7 +949,7 @@ class ManageView(discord.ui.View):
                     await interaction.followup.send(embed=create_info_embed("Installing SSH", "Installing tmate..."), ephemeral=True)
                     await execute_lxc(f"lxc exec {container_name} -- apt-get update -y")
                     await execute_lxc(f"lxc exec {container_name} -- apt-get install tmate -y")
-                    await interaction.followup.send(embed=create_success_embed("Installed", "UnixNodes SSH service installed!"), ephemeral=True)
+                    await interaction.followup.send(embed=create_success_embed("Installed", "ShadowNodes SSH service installed!"), ephemeral=True)
                 session_name = f"unixnodes-session-{datetime.now().strftime('%Y%m%d%H%M%S')}"
                 await execute_lxc(f"lxc exec {container_name} -- tmate -S /tmp/{session_name}.sock new-session -d")
                 await asyncio.sleep(3)
@@ -962,12 +962,12 @@ class ManageView(discord.ui.View):
                 ssh_url = stdout.decode().strip() if stdout else None
                 if ssh_url:
                     try:
-                        ssh_embed = create_embed("ðŸ”‘ UnixNodes SSH Access", f"SSH connection for VPS `{container_name}`:", 0x00ff88)
+                        ssh_embed = create_embed("ðŸ”‘ ShadowNodes SSH Access", f"SSH connection for VPS `{container_name}`:", 0x00ff88)
                         add_field(ssh_embed, "Command", f"```{ssh_url}```", False)
                         add_field(ssh_embed, "âš ï¸ Security", "This link is temporary. Do not share it.", False)
                         add_field(ssh_embed, "ðŸ“ Session", f"Session ID: {session_name}", False)
                         await interaction.user.send(embed=ssh_embed)
-                        await interaction.followup.send(embed=create_success_embed("SSH Sent", f"Check your DMs for UnixNodes SSH link! Session: {session_name}"), ephemeral=True)
+                        await interaction.followup.send(embed=create_success_embed("SSH Sent", f"Check your DMs for ShaodwNodes SSH link! Session: {session_name}"), ephemeral=True)
                     except discord.Forbidden:
                         await interaction.followup.send(embed=create_error_embed("DM Failed", "Enable DMs to receive UnixNodes SSH link!"), ephemeral=True)
                 else:
@@ -983,20 +983,20 @@ async def manage_vps(ctx, user: discord.Member = None):
     if user:
         user_id_check = str(ctx.author.id)
         if user_id_check != str(MAIN_ADMIN_ID) and user_id_check not in admin_data.get("admins", []):
-            await ctx.send(embed=create_error_embed("Access Denied", "Only UnixNodes admins can manage other users' VPS."))
+            await ctx.send(embed=create_error_embed("Access Denied", "Only ShadowNodes admins can manage other users' VPS."))
             return
         user_id = str(user.id)
         vps_list = vps_data.get(user_id, [])
         if not vps_list:
-            await ctx.send(embed=create_error_embed("No VPS Found", f"{user.mention} doesn't have any UnixNodes VPS."))
+            await ctx.send(embed=create_error_embed("No VPS Found", f"{user.mention} doesn't have any ShadowNodes VPS."))
             return
         view = ManageView(str(ctx.author.id), vps_list, is_admin=True, owner_id=user_id)
-        await ctx.send(embed=create_info_embed(f"Managing {user.name}'s UnixNodes VPS", f"Managing VPS for {user.mention}"), view=view)
+        await ctx.send(embed=create_info_embed(f"Managing {user.name}'s ShadowNodes VPS", f"Managing VPS for {user.mention}"), view=view)
     else:
         user_id = str(ctx.author.id)
         vps_list = vps_data.get(user_id, [])
         if not vps_list:
-            embed = create_error_embed("No VPS Found", "You don't have any UnixNodes VPS. Contact an admin to create one.")
+            embed = create_error_embed("No VPS Found", "You don't have any ShadowNoes VPS. Contact an admin to create one.")
             add_field(embed, "Quick Actions", "â€¢ `!manage` - Manage VPS\nâ€¢ Contact UnixNodes admin for VPS creation", False)
             await ctx.send(embed=embed)
             return
@@ -1030,7 +1030,7 @@ async def list_all_vps(ctx):
             suspended_vps += user_suspended
             whitelisted_vps += user_whitelisted
 
-            user_summary.append(f"**{user.name}** ({user.mention}) - {user_vps_count} UnixNodes VPS ({user_running} running, {user_suspended} suspended, {user_whitelisted} whitelisted)")
+            user_summary.append(f"**{user.name}** ({user.mention}) - {user_vps_count} ShadowNodes VPS ({user_running} running, {user_suspended} suspended, {user_whitelisted} whitelisted)")
 
             for i, vps in enumerate(vps_list):
                 status_emoji = "ðŸŸ¢" if vps.get('status') == 'running' and not vps.get('suspended', False) else "ðŸŸ¡" if vps.get('suspended', False) else "ðŸ”´"
@@ -1042,12 +1042,12 @@ async def list_all_vps(ctx):
                 vps_info.append(f"{status_emoji} **{user.name}** - VPS {i+1}: `{vps['container_name']}` - {vps.get('config', 'Custom')} - {status_text}")
 
         except discord.NotFound:
-            vps_info.append(f"â“ Unknown User ({user_id}) - {len(vps_list)} UnixNodes VPS")
-    embed = create_embed("All UnixNodes VPS Information", "Complete overview of all UnixNodes VPS deployments and user statistics", 0x1a1a1a)
+            vps_info.append(f"â“ Unknown User ({user_id}) - {len(vps_list)} ShadowNodes VPS")
+    embed = create_embed("All UnixNodes VPS Information", "Complete overview of all ShadowNodes VPS deployments and user statistics", 0x1a1a1a)
     add_field(embed, "System Overview", f"**Total Users:** {total_users}\n**Total VPS:** {total_vps}\n**Running:** {running_vps}\n**Stopped:** {stopped_vps}\n**Suspended:** {suspended_vps}\n**Whitelisted:** {whitelisted_vps}", False)
     await ctx.send(embed=embed)
     if user_summary:
-        embed = create_embed("UnixNodes User Summary", f"Summary of all users and their UnixNodes VPS", 0x1a1a1a)
+        embed = create_embed("UnixNodes User Summary", f"Summary of all users and their ShadowNodes VPS", 0x1a1a1a)
         summary_text = "\n".join(user_summary)
         chunks = [summary_text[i:i+1024] for i in range(0, len(summary_text), 1024)]
         for idx, chunk in enumerate(chunks, 1):
@@ -1066,11 +1066,11 @@ async def manage_shared_vps(ctx, owner: discord.Member, vps_number: int):
     owner_id = str(owner.id)
     user_id = str(ctx.author.id)
     if owner_id not in vps_data or vps_number < 1 or vps_number > len(vps_data[owner_id]):
-        await ctx.send(embed=create_error_embed("Invalid VPS", "Invalid VPS number or owner doesn't have a UnixNodes VPS."))
+        await ctx.send(embed=create_error_embed("Invalid VPS", "Invalid VPS number or owner doesn't have a ShadowNodes VPS."))
         return
     vps = vps_data[owner_id][vps_number - 1]
     if user_id not in vps.get("shared_with", []):
-        await ctx.send(embed=create_error_embed("Access Denied", "You do not have access to this UnixNodes VPS."))
+        await ctx.send(embed=create_error_embed("Access Denied", "You do not have access to this ShadowNodes VPS."))
         return
     view = ManageView(user_id, [vps], is_shared=True, owner_id=owner_id, actual_index=vps_number - 1)
     embed = await view.get_initial_embed()
@@ -1081,19 +1081,19 @@ async def share_user(ctx, shared_user: discord.Member, vps_number: int):
     user_id = str(ctx.author.id)
     shared_user_id = str(shared_user.id)
     if user_id not in vps_data or vps_number < 1 or vps_number > len(vps_data[user_id]):
-        await ctx.send(embed=create_error_embed("Invalid VPS", "Invalid VPS number or you don't have a UnixNodes VPS."))
+        await ctx.send(embed=create_error_embed("Invalid VPS", "Invalid VPS number or you don't have a ShadowNodes VPS."))
         return
     vps = vps_data[user_id][vps_number - 1]
     if "shared_with" not in vps:
         vps["shared_with"] = []
     if shared_user_id in vps["shared_with"]:
-        await ctx.send(embed=create_error_embed("Already Shared", f"{shared_user.mention} already has access to this UnixNodes VPS!"))
+        await ctx.send(embed=create_error_embed("Already Shared", f"{shared_user.mention} already has access to this ShadowNodes VPS!"))
         return
     vps["shared_with"].append(shared_user_id)
     save_vps_data()
-    await ctx.send(embed=create_success_embed("VPS Shared", f"UnixNodes VPS #{vps_number} shared with {shared_user.mention}!"))
+    await ctx.send(embed=create_success_embed("VPS Shared", f"ShadowNodes VPS #{vps_number} shared with {shared_user.mention}!"))
     try:
-        await shared_user.send(embed=create_embed("UnixNodes VPS Access Granted", f"You have access to VPS #{vps_number} from {ctx.author.mention}. Use `!manage-shared {ctx.author.mention} {vps_number}`", 0x00ff88))
+        await shared_user.send(embed=create_embed("ShadowNodes VPS Access Granted", f"You have access to VPS #{vps_number} from {ctx.author.mention}. Use `!manage-shared {ctx.author.mention} {vps_number}`", 0x00ff88))
     except discord.Forbidden:
         await ctx.send(embed=create_info_embed("Notification Failed", f"Could not DM {shared_user.mention}"))
 
