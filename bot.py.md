@@ -599,7 +599,7 @@ async def my_vps(ctx):
         add_field(embed, "Quick Actions", "â€¢ `!manage` - Manage VPS\nâ€¢ Contact UnixNodes admin for VPS creation", False)
         await ctx.send(embed=embed)
         return
-    embed = create_info_embed("My UnixNodes VPS", "")
+    embed = create_info_embed("ShadowNodes VPS", "")
     text = []
     for i, vps in enumerate(vps_list):
         status = vps.get('status', 'unknown').upper()
@@ -618,7 +618,7 @@ async def my_vps(ctx):
 async def lxc_list(ctx):
     try:
         result = await execute_lxc("lxc list")
-        embed = create_info_embed("UnixNodes LXC Containers List", result)
+        embed = create_info_embed("ShadowNodes LXC Containers List", result)
         await ctx.send(embed=embed)
     except Exception as e:
         await ctx.send(embed=create_error_embed("Error", str(e)))
@@ -681,10 +681,10 @@ class OSSelectView(discord.ui.View):
                 vps_role = await get_or_create_vps_role(self.ctx.guild)
                 if vps_role:
                     try:
-                        await self.user.add_roles(vps_role, reason="UnixNodes VPS ownership granted")
+                        await self.user.add_roles(vps_role, reason="ShadowNodes VPS ownership granted")
                     except discord.Forbidden:
                         logger.warning(f"Failed to assign UnixNodes VPS role to {self.user.name}")
-            success_embed = create_success_embed("UnixNodes VPS Created Successfully")
+            success_embed = create_success_embed("ShadowNodes VPS Created Successfully")
             add_field(success_embed, "Owner", self.user.mention, True)
             add_field(success_embed, "VPS ID", f"#{vps_count}", True)
             add_field(success_embed, "Container", f"`{container_name}`", True)
@@ -739,7 +739,7 @@ class ManageView(discord.ui.View):
             self.select = discord.ui.Select(placeholder="Select a UnixNodes VPS to manage", options=options)
             self.select.callback = self.select_vps
             self.add_item(self.select)
-            self.initial_embed = create_embed("UnixNodes VPS Management", "Select a VPS from the dropdown menu below.", 0x1a1a1a)
+            self.initial_embed = create_embed("ShadowNodes VPS Management", "Select a VPS from the dropdown menu below.", 0x1a1a1a)
             add_field(self.initial_embed, "Available VPS", "\n".join([f"**VPS {i+1}:** `{v['container_name']}` - Status: `{v.get('status', 'unknown').upper()}`" for i, v in enumerate(vps_list)]), False)
         else:
             self.selected_index = 0
@@ -777,7 +777,7 @@ class ManageView(discord.ui.View):
             except:
                 owner_text = f"\n**Owner ID:** {self.owner_id}"
         embed = create_embed(
-            f"UnixNodes VPS Management - VPS {index + 1}",
+            f"ShadowNodes VPS Management - VPS {index + 1}",
             f"Managing container: `{container_name}`{owner_text}",
             status_color
         )
@@ -790,7 +790,7 @@ class ManageView(discord.ui.View):
         resource_info += f"**Uptime:** {uptime}"
         add_field(embed, "ðŸ“Š Allocated Resources", resource_info, False)
         if suspended:
-            add_field(embed, "âš ï¸ Suspended", "This UnixNodes VPS is suspended. Contact an admin to unsuspend.", False)
+            add_field(embed, "âš ï¸ Suspended", "This ShadowNodes VPS is suspended. Contact an admin to unsuspend.", False)
         if whitelisted:
             add_field(embed, "âœ… Whitelisted", "This VPS is exempt from auto-suspension.", False)
         live_stats = f"**CPU Usage:** {cpu_usage}\n**Memory:** {memory_usage}\n**Disk:** {disk_usage}"
@@ -828,7 +828,7 @@ class ManageView(discord.ui.View):
 
     async def action_callback(self, interaction: discord.Interaction, action: str):
         if str(interaction.user.id) != self.user_id and not self.is_admin:
-            await interaction.response.send_message(embed=create_error_embed("Access Denied", "This is not your UnixNodes VPS!"), ephemeral=True)
+            await interaction.response.send_message(embed=create_error_embed("Access Denied", "This is not your Unix ShadowNodes!"), ephemeral=True)
             return
         if self.selected_index is None:
             await interaction.response.send_message(embed=create_error_embed("No VPS Selected", "Please select a VPS first."), ephemeral=True)
@@ -837,7 +837,7 @@ class ManageView(discord.ui.View):
         target_vps = vps_data[self.owner_id][actual_idx]
         suspended = target_vps.get('suspended', False)
         if suspended and not self.is_admin and action != 'stats':
-            await interaction.response.send_message(embed=create_error_embed("Access Denied", "This UnixNodes VPS is suspended. Contact an admin to unsuspend."), ephemeral=True)
+            await interaction.response.send_message(embed=create_error_embed("Access Denied", "This ShadowNodes VPS is suspended. Contact an admin to unsuspend."), ephemeral=True)
             return
         container_name = target_vps["container_name"]
         if action == 'stats':
@@ -856,7 +856,7 @@ class ManageView(discord.ui.View):
             return
         if action == 'reinstall':
             if self.is_shared or self.is_admin:
-                await interaction.response.send_message(embed=create_error_embed("Access Denied", "Only the UnixNodes VPS owner can reinstall!"), ephemeral=True)
+                await interaction.response.send_message(embed=create_error_embed("Access Denied", "Only the ShadowNodes VPS owner can reinstall!"), ephemeral=True)
                 return
             if suspended:
                 await interaction.response.send_message(embed=create_error_embed("Cannot Reinstall", "Unsuspend the UnixNodes VPS first."), ephemeral=True)
@@ -922,7 +922,7 @@ class ManageView(discord.ui.View):
                 await execute_lxc(f"lxc start {container_name}")
                 target_vps["status"] = "running"
                 save_vps_data()
-                await interaction.followup.send(embed=create_success_embed("VPS Started", f"UnixNodes VPS `{container_name}` is now running!"), ephemeral=True)
+                await interaction.followup.send(embed=create_success_embed("VPS Started", f"ShadowNodes VPS `{container_name}` is now running!"), ephemeral=True)
             except Exception as e:
                 await interaction.followup.send(embed=create_error_embed("Start Failed", str(e)), ephemeral=True)
         elif action == 'stop':
@@ -937,7 +937,7 @@ class ManageView(discord.ui.View):
             if suspended:
                 await interaction.followup.send(embed=create_error_embed("Access Denied", "Cannot access suspended UnixNodes VPS."), ephemeral=True)
                 return
-            await interaction.followup.send(embed=create_info_embed("SSH Access", "Generating UnixNodes SSH connection..."), ephemeral=True)
+            await interaction.followup.send(embed=create_info_embed("SSH Access", "Generating ShadowNodes SSH connection..."), ephemeral=True)
             try:
                 check_proc = await asyncio.create_subprocess_exec(
                     "lxc", "exec", container_name, "--", "which", "tmate",
