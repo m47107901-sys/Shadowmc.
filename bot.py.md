@@ -879,7 +879,7 @@ class ManageView(discord.ui.View):
                     try:
                         await inter.followup.send(embed=create_info_embed("Deleting Container", f"Forcefully removing container `{self.container_name}`..."), ephemeral=True)
                         await execute_lxc(f"lxc delete {self.container_name} --force")
-                        await inter.followup.send(embed=create_info_embed("Recreating Container", f"Creating new UnixNodes container `{self.container_name}`..."), ephemeral=True)
+                        await inter.followup.send(embed=create_info_embed("Recreating Container", f"Creating new ShadowNodes container `{self.container_name}`..."), ephemeral=True)
                         target_vps = vps_data[self.owner_id][self.actual_idx]
                         original_ram = target_vps["ram"]
                         original_cpu = target_vps["cpu"]
@@ -935,7 +935,7 @@ class ManageView(discord.ui.View):
                 await interaction.followup.send(embed=create_error_embed("Stop Failed", str(e)), ephemeral=True)
         elif action == 'tmate':
             if suspended:
-                await interaction.followup.send(embed=create_error_embed("Access Denied", "Cannot access suspended UnixNodes VPS."), ephemeral=True)
+                await interaction.followup.send(embed=create_error_embed("Access Denied", "Cannot access suspended ShadowNodes VPS."), ephemeral=True)
                 return
             await interaction.followup.send(embed=create_info_embed("SSH Access", "Generating ShadowNodes SSH connection..."), ephemeral=True)
             try:
@@ -996,8 +996,8 @@ async def manage_vps(ctx, user: discord.Member = None):
         user_id = str(ctx.author.id)
         vps_list = vps_data.get(user_id, [])
         if not vps_list:
-            embed = create_error_embed("No VPS Found", "You don't have any ShadowNoes VPS. Contact an admin to create one.")
-            add_field(embed, "Quick Actions", "â€¢ `!manage` - Manage VPS\nâ€¢ Contact UnixNodes admin for VPS creation", False)
+            embed = create_error_embed("No VPS Found", "You don't have any ShadowNodes VPS. Contact an admin to create one.")
+            add_field(embed, "Quick Actions", "â€¢ `!manage` - Manage VPS\nâ€¢ Contact ShadowNodes admin for VPS creation", False)
             await ctx.send(embed=embed)
             return
         view = ManageView(user_id, vps_list)
@@ -1102,19 +1102,19 @@ async def revoke_share(ctx, shared_user: discord.Member, vps_number: int):
     user_id = str(ctx.author.id)
     shared_user_id = str(shared_user.id)
     if user_id not in vps_data or vps_number < 1 or vps_number > len(vps_data[user_id]):
-        await ctx.send(embed=create_error_embed("Invalid VPS", "Invalid VPS number or you don't have a UnixNodes VPS."))
+        await ctx.send(embed=create_error_embed("Invalid VPS", "Invalid VPS number or you don't have a ShadowNodes VPS."))
         return
     vps = vps_data[user_id][vps_number - 1]
     if "shared_with" not in vps:
         vps["shared_with"] = []
     if shared_user_id not in vps["shared_with"]:
-        await ctx.send(embed=create_error_embed("Not Shared", f"{shared_user.mention} doesn't have access to this UnixNodes VPS!"))
+        await ctx.send(embed=create_error_embed("Not Shared", f"{shared_user.mention} doesn't have access to this ShadowNodes VPS!"))
         return
     vps["shared_with"].remove(shared_user_id)
     save_vps_data()
-    await ctx.send(embed=create_success_embed("Access Revoked", f"Access to UnixNodes VPS #{vps_number} revoked from {shared_user.mention}!"))
+    await ctx.send(embed=create_success_embed("Access Revoked", f"Access to ShadowNodes VPS #{vps_number} revoked from {shared_user.mention}!"))
     try:
-        await shared_user.send(embed=create_embed("UnixNodes VPS Access Revoked", f"Your access to VPS #{vps_number} by {ctx.author.mention} has been revoked.", 0xff3366))
+        await shared_user.send(embed=create_embed("ShadowNodes VPS Access Revoked", f"Your access to VPS #{vps_number} by {ctx.author.mention} has been revoked.", 0xff3366))
     except discord.Forbidden:
         await ctx.send(embed=create_info_embed("Notification Failed", f"Could not DM {shared_user.mention}"))
 
